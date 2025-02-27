@@ -6,7 +6,7 @@ local RunService = game:GetService("RunService")
 -- Create a box
 local function createBox()
     local box = Drawing.new("Square")
-    box.Thickness = 1.5
+    box.Thickness = 1 -- Thinner thickness
     box.Color = Color3.fromRGB(255, 0, 0)
     box.Filled = false
     box.Visible = false
@@ -34,7 +34,7 @@ local function updateBox(player)
             else
                 local headOffset = head.Position.Y - rootPart.Position.Y
                 height = humanoid.HipHeight + headOffset + 2.5
-                width = height * 0.6
+                width = height * 0.5 -- Adjusted width to height ratio for better proportions
             end
 
             -- Calculate box position (head to feet)
