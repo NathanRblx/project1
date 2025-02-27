@@ -29,8 +29,8 @@ CircleDrawing.Color = Color3.fromRGB(255, 255, 255)
 -- Optimization
 local WorldToViewportPoint = Camera.WorldToViewportPoint
 local GetMouseLocation = UserInputService.GetMouseLocation
-local IsMouseButtonPressed = UserInputService.IsMouseButtonPressed
-local MouseButton2 = Enum.UserInputType.MouseButton2
+local IsKeyDown = UserInputService.IsKeyDown
+local KeyCodeQ = Enum.KeyCode.Q
 
 -- Visibility Check Function
 local function IsVisible(position, ignoreList)
@@ -85,8 +85,8 @@ end
 
 -- Main loop
 RunService.Heartbeat:Connect(function()
-    -- Update right-click state
-    AimbotSettings.Enabled = IsMouseButtonPressed(UserInputService, MouseButton2)
+    -- Update Q key state
+    AimbotSettings.Enabled = IsKeyDown(UserInputService, KeyCodeQ)
     
     if AimbotSettings.Enabled then
         local target = GetClosestPlayer()
@@ -116,6 +116,6 @@ end)
 -- Initial notification
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "Aimbot Active",
-    Text = "Hold RIGHT CLICK to aim\nP - Toggle Team Check",
+    Text = "Hold Q to aim\nP - Toggle Team Check",
     Duration = 5
 })
