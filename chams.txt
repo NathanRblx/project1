@@ -1,0 +1,61 @@
+-- Variable to store whether the team check is enabled or not
+local teamCheckEnabled = true
+
+-- Function to add outline to a player with team check
+function addOutlineToPlayer(player)
+    -- Check if the player has a character and if team check is enabled
+    if player.Character and (not teamCheckEnabled or player.Team ~= game.Players.LocalPlayer.Team) then
+        -- Create a new Highlight
+        local highlight = Instance.new("Highlight")
+        -- Set the Adornee to the player's character
+        highlight.Adornee = player.Character
+        -- Customize the outline
+        highlight.OutlineColor = Color3.new(1, 1, 1) -- White color
+        highlight.OutlineTransparency = 0
+        highlight.FillColor = Color3.new(0, 0, 0) -- Black fill color
+        highlight.FillTransparency = 0.75 -- Adjust transparency to make the fill light black
+        -- Parent the Highlight to the player's character
+        highlight.Parent = player.Character
+    end
+end
+
+-- Function to update outlines for all players in the game except for yourself
+local function updateOutlines()
+    local localPlayer = game.Players.LocalPlayer
+    for _, player in pairs(game.Players:GetPlayers()) do
+        if player ~= localPlayer then
+            -- Wait for the character to load
+            player.CharacterAdded:Wait()
+            -- Add outline to the player's character
+            addOutlineToPlayer(player)
+        end
+    end
+end
+
+-- Update outlines when the game starts
+updateOutlines()
+
+-- Update outlines for new players joining the game
+game.Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        if player ~= game.Players.LocalPlayer then
+            addOutlineToPlayer(player)
+        end
+    end)
+end)
+
+-- Update outlines for players respawning
+game.Players.PlayerRemoving:Connect(function(player)
+    if player.Character then
+        player.Character:Destroy()
+    end
+end)
+
+-- Toggle team check when the 'K' key is pressed
+local UIS = game:GetService("UserInputService")
+UIS.InputBegan:Connect(function(input, gameProcessed)
+    if input.KeyCode == Enum.KeyCode.K and not gameProcessed then
+        teamCheckEnabled = not teamCheckEnabled
+        updateOutlines() -- Update outlines when team check is toggled
+    end
+end)
