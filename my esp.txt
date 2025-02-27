@@ -3,19 +3,26 @@ local camera = game.Workspace.CurrentCamera
 local players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
--- Create a box
+-- Create a box with an outline
 local function createBox()
+    local outline = Drawing.new("Square")
+    outline.Thickness = 2 -- Thinner outline
+    outline.Color = Color3.fromRGB(0, 0, 0) -- Black color
+    outline.Filled = false
+    outline.Visible = false
+
     local box = Drawing.new("Square")
     box.Thickness = 1 -- Keep it thin
-    box.Color = Color3.fromRGB(255, 0, 0)
+    box.Color = Color3.fromRGB(255, 255, 255)
     box.Filled = false
     box.Visible = false
-    return box
+
+    return outline, box
 end
 
 -- Update the box to follow a player
 local function updateBox(player)
-    local box = createBox()
+    local outline, box = createBox()
 
     RunService.RenderStepped:Connect(function()
         local character = player.Character
@@ -56,14 +63,25 @@ local function updateBox(player)
                 local centerY = (topScreen.Y + bottomScreen.Y) / 2
 
                 -- Clamp the box position to avoid disappearing at screen edges
-                box.Size = Vector2.new(math.clamp(boxWidth, 0, camera.ViewportSize.X), math.clamp(boxHeight, 0, camera.ViewportSize.Y))
-                box.Position = Vector2.new(math.clamp(centerX - boxWidth / 2, 0, camera.ViewportSize.X), math.clamp(centerY - boxHeight / 2, 0, camera.ViewportSize.Y))
+                local clampedBoxWidth = math.clamp(boxWidth, 0, camera.ViewportSize.X)
+                local clampedBoxHeight = math.clamp(boxHeight, 0, camera.ViewportSize.Y)
+                local clampedCenterX = math.clamp(centerX - boxWidth / 2, 0, camera.ViewportSize.X)
+                local clampedCenterY = math.clamp(centerY - boxHeight / 2, 0, camera.ViewportSize.Y)
 
+                outline.Size = Vector2.new(clampedBoxWidth, clampedBoxHeight)
+                outline.Position = Vector2.new(clampedCenterX, clampedCenterY)
+
+                box.Size = Vector2.new(clampedBoxWidth, clampedBoxHeight)
+                box.Position = Vector2.new(clampedCenterX, clampedCenterY)
+
+                outline.Visible = true
                 box.Visible = true
             else
+                outline.Visible = false
                 box.Visible = false
             end
         else
+            outline.Visible = false
             box.Visible = false
         end
     end)
@@ -83,4 +101,4 @@ players.PlayerAdded:Connect(function(player)
     end
 end)
 
-print("ESP Script Loaded - Supports R6 and R15 with improved visibility")
+print("ESP Script Loaded - Supports R6 and R15 with improved visibility and subtle outlines")
