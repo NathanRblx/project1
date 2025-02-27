@@ -1,0 +1,86 @@
+-- Required services
+local camera = game.Workspace.CurrentCamera
+local players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+-- Create a box
+local function createBox()
+    local box = Drawing.new("Square")
+    box.Thickness = 1.5
+    box.Color = Color3.fromRGB(255, 0, 0)
+    box.Filled = false
+    box.Visible = false
+    return box
+end
+
+-- Update the box to follow a player
+local function updateBox(player)
+    local box = createBox()
+
+    RunService.RenderStepped:Connect(function()
+        local character = player.Character
+        if character and character:FindFirstChild("HumanoidRootPart") and character:FindFirstChild("Humanoid") then
+            local rootPart = character.HumanoidRootPart
+            local humanoid = character.Humanoid
+            local head = character:FindFirstChild("Head")
+            if not head then return end
+
+            local height, width
+
+            -- Check for R6 or R15 rig type
+            if humanoid.RigType == Enum.HumanoidRigType.R6 then
+                height = 6 -- Approximate R6 height
+                width = 4 -- R6 has a wider body proportion
+            else
+                local headOffset = head.Position.Y - rootPart.Position.Y
+                height = humanoid.HipHeight + headOffset + 2.5
+                width = height * 0.6
+            end
+
+            -- Calculate box position (head to feet)
+            local topOffset = rootPart.Position + Vector3.new(0, height / 2, 0)
+            local bottomOffset = rootPart.Position - Vector3.new(0, height / 2, 0)
+
+            -- World-to-screen conversion with better visibility handling
+            local topScreen, onScreenTop = camera:WorldToViewportPoint(topOffset)
+            local bottomScreen, onScreenBottom = camera:WorldToViewportPoint(bottomOffset)
+
+            -- Ensure visibility by checking Z-axis (depth)
+            local isVisible = onScreenTop and onScreenBottom and topScreen.Z > 0 and bottomScreen.Z > 0
+
+            if isVisible then
+                local boxHeight = math.abs(topScreen.Y - bottomScreen.Y)
+                local boxWidth = boxHeight * (width / height)
+
+                local centerX = (topScreen.X + bottomScreen.X) / 2
+                local centerY = (topScreen.Y + bottomScreen.Y) / 2
+
+                -- Clamp the box position to avoid disappearing at screen edges
+                box.Size = Vector2.new(math.clamp(boxWidth, 0, camera.ViewportSize.X), math.clamp(boxHeight, 0, camera.ViewportSize.Y))
+                box.Position = Vector2.new(math.clamp(centerX - boxWidth / 2, 0, camera.ViewportSize.X), math.clamp(centerY - boxHeight / 2, 0, camera.ViewportSize.Y))
+
+                box.Visible = true
+            else
+                box.Visible = false
+            end
+        else
+            box.Visible = false
+        end
+    end)
+end
+
+-- Apply ESP to all players (excluding local player)
+for _, player in ipairs(players:GetPlayers()) do
+    if player ~= players.LocalPlayer then
+        updateBox(player)
+    end
+end
+
+-- Handle new players joining the game
+players.PlayerAdded:Connect(function(player)
+    if player ~= players.LocalPlayer then
+        updateBox(player)
+    end
+end)
+
+print("ESP Script Loaded - Supports R6 and R15 with improved visibility")
