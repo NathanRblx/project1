@@ -1,100 +1,81 @@
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+-- Services
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
 
-local Window = Rayfield:CreateWindow({
-   Name = "iLoveFemboys",
-   Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "two cuties fuckin",
-   LoadingSubtitle = "By the 2 cuties fuckin",
-   Theme = "Default", -- Check https://docs.sirius.menu/rayfield/configuration/themes
+local camera = workspace.CurrentCamera
+local localPlayer = Players.LocalPlayer
 
-   DisableRayfieldPrompts = false,
-   DisableBuildWarnings = false, -- Prevents Rayfield from warning when the script has a version mismatch with the interface
+-- Variables
+local aimEnabled = false
+local aimKey = Enum.KeyCode.Q
+local maxMoveSpeed = 50  -- Very high max move speed to track fast movements
+local snapStrength = 0.5 -- Increased snap strength for quicker snapping
 
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = nil, -- Create a custom folder for your hub/game
-      FileName = "nil"
-   },
+-- Find the closest player to the mouse
+local function getClosestPlayerToMouse()
+    local closestPlayer = nil
+    local shortestDistance = math.huge
+    local mousePosition = UserInputService:GetMouseLocation()
 
-   Discord = {
-      Enabled = true, -- Prompt the user to join your Discord server if their executor supports it
-      Invite = ".gg/emptyfornow", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
-      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
-   },
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= localPlayer and player.Character and player.Character:FindFirstChild("Head") then
+            local headPosition, onScreen = camera:WorldToViewportPoint(player.Character.Head.Position)
+            if onScreen then
+                local distance = (Vector2.new(headPosition.X, headPosition.Y) - mousePosition).magnitude
+                if distance < shortestDistance then
+                    closestPlayer = player
+                    shortestDistance = distance
+                end
+            end
+        end
+    end
 
-   KeySystem = false, -- Set this to true to use our key system
-   KeySettings = {
-      Title = "Untitled",
-      Subtitle = "Key System",
-      Note = "No method of obtaining the key is provided", -- Use this to tell the user how to get a key
-      FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
-      SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
-      GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
-      Key = {"Hello"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
-   }
-})
+    return closestPlayer
+end
 
-local MainTab = Window:CreateTab("Default", 4483362458) -- Title, Image
-local MainTab = Window:CreateTab("Aimbot")
+-- Aim directly at the middle of the target's head with stronger snap and tracking
+local function aimAt(target)
+    if target and target.Character and target.Character:FindFirstChild("Head") then
+        -- Get the size of the player's head
+        local headSize = target.Character.Head.Size
+        -- Calculate the middle of the head
+        local headMiddle = target.Character.Head.Position + Vector3.new(0, headSize.Y / 2, 0)
+        -- Convert the head middle position to viewport space
+        local headPosition, onScreen = camera:WorldToViewportPoint(headMiddle)
+        local mousePosition = UserInputService:GetMouseLocation()
 
-local Button = MainTab:CreateButton({
-   Name = "Aimbot",
-   Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/NathanRblx/project1/refs/heads/main/AimBot.txt", true))()
-   end,
-})
+        if onScreen then
+            -- Calculate the difference between the mouse and target position
+            local deltaX = headPosition.X - mousePosition.X
+            local deltaY = headPosition.Y - mousePosition.Y
 
+            -- Apply a high-speed snap that adjusts rapidly but with controlled movement
+            local moveX = math.clamp(deltaX, -maxMoveSpeed, maxMoveSpeed)
+            local moveY = math.clamp(deltaY, -maxMoveSpeed, maxMoveSpeed)
 
--- Second Button
-MainTab:CreateButton({
-   Name = "MouseAimbot",
-   Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/NathanRblx/project1/refs/heads/main/mousaimbot.txt", true))()
-   end
-})
+            -- Apply stronger snap strength for quicker aiming
+            mousemoverel(moveX * snapStrength, moveY * snapStrength)
+        end
+    end
+end
 
+-- Input handling for toggles
+UserInputService.InputBegan:Connect(function(input, isTyping)
+    if isTyping then return end
 
-Rayfield:Notify({
-   Title = "Loaded",
-   Content = "Fully Loaded",
-   Duration = 6.5,
-   Image = 4483362458,
-})
+    if input.KeyCode == aimKey then
+        aimEnabled = not aimEnabled
+        print("Aimbot: " .. (aimEnabled and "ON" or "OFF"))
+    end
+end)
 
-local Keybind = MainTab:CreateKeybind({
-   Name = "toggle key", 
-   CurrentKeybind = "Q",
-   HoldToInteract = false,
-   Flag = "Keybind1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-   Callback = function(Keybind)
-   -- The function that takes place when the keybind is pressed
-   -- The variable (Keybind) is a boolean for whether the keybind is being held or not (HoldToInteract needs to be true)
-   end,
-})
-
-local MainTab = Window:CreateTab("Esp", 4483362458) -- Title, Image
-
-local Button = MainTab:CreateButton({
-   Name = "Esp",
-   Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/NathanRblx/project1/refs/heads/main/my%20esp.txt", true))()
-   end,
-})
-
-local MainTab = Window:CreateTab("Chams", 4483362458) -- Title, Image
-
-local Button = MainTab:CreateButton({
-   Name = "turn on chams",
-   Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/NathanRblx/project1/refs/heads/main/chams.txt", true))()
-end,
-})
-
-local MainTab = Window:CreateTab("misc", 4483362458) -- Title, Image
-
-local Button = MainTab:CreateButton({
-   Name = "turn on fly Keybind F",
-   Callback = function()
-      loadstring(game:HttpGet("https://raw.githubusercontent.com/NathanRblx/project1/refs/heads/main/fly.txt", true))()
-   end,
-})
+-- Main loop: Aimbot constantly aims at the target when enabled
+RunService.RenderStepped:Connect(function()
+    if aimEnabled then
+        local target = getClosestPlayerToMouse()
+        if target then
+            aimAt(target)
+        end
+    end
+end)
