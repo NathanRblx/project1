@@ -1,3 +1,4 @@
+-- Required services
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -5,9 +6,8 @@ local Players = game:GetService("Players")
 local camera = workspace.CurrentCamera
 local localPlayer = Players.LocalPlayer
 
-local aimEnabled = false
-local aimKey = Enum.KeyCode.Q
-local snapStrength = 0.5  -- This will be controlled by the smoothness slider
+-- Default smoothness value (this will be overridden by the Rayfield slider)
+local snapStrength = 0.5  -- Default smoothness value
 
 -- Find the closest player to the mouse
 local function getClosestPlayerToMouse()
@@ -52,16 +52,6 @@ local function aimAt(target)
         end
     end
 end
-
--- Input handling for toggles
-UserInputService.InputBegan:Connect(function(input, isTyping)
-    if isTyping then return end
-
-    if input.KeyCode == aimKey then
-        aimEnabled = not aimEnabled
-        print("Mouse Aimbot: " .. (aimEnabled and "ON" or "OFF"))
-    end
-end)
 
 -- Main loop: Aimbot constantly aims at the target when enabled
 RunService.RenderStepped:Connect(function()
