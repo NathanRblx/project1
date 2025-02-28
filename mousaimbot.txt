@@ -8,10 +8,11 @@ local localPlayer = Players.LocalPlayer
 
 -- Variables
 local aimEnabled = false
-local aimSmoothness = 0.1 -- Default: 0.1 (Lower = stronger aim)
 local aimKey = Enum.KeyCode.Q
+local maxMoveSpeed = 50  -- Very high max move speed to track fast movements
+local snapStrength = 0.5 -- Increased snap strength for quicker snapping
 
--- Function: Find the closest player to the mouse
+-- Find the closest player to the mouse
 local function getClosestPlayerToMouse()
     local closestPlayer = nil
     local shortestDistance = math.huge
@@ -33,36 +34,43 @@ local function getClosestPlayerToMouse()
     return closestPlayer
 end
 
--- Function: Aim at the target smoothly (mouse-based)
+-- Aim directly at the middle of the target's head with stronger snap and tracking
 local function aimAt(target)
     if target and target.Character and target.Character:FindFirstChild("Head") then
-        local headPosition = camera:WorldToViewportPoint(target.Character.Head.Position)
+        -- Get the size of the player's head
+        local headSize = target.Character.Head.Size
+        -- Calculate the middle of the head
+        local headMiddle = target.Character.Head.Position + Vector3.new(0, headSize.Y / 2, 0)
+        -- Convert the head middle position to viewport space
+        local headPosition, onScreen = camera:WorldToViewportPoint(headMiddle)
         local mousePosition = UserInputService:GetMouseLocation()
 
-        local deltaX = (headPosition.X - mousePosition.X) * aimSmoothness
-        local deltaY = (headPosition.Y - mousePosition.Y) * aimSmoothness
+        if onScreen then
+            -- Calculate the difference between the mouse and target position
+            local deltaX = headPosition.X - mousePosition.X
+            local deltaY = headPosition.Y - mousePosition.Y
 
-        mousemoverel(deltaX, deltaY)
+            -- Apply a high-speed snap that adjusts rapidly but with controlled movement
+            local moveX = math.clamp(deltaX, -maxMoveSpeed, maxMoveSpeed)
+            local moveY = math.clamp(deltaY, -maxMoveSpeed, maxMoveSpeed)
+
+            -- Apply stronger snap strength for quicker aiming
+            mousemoverel(moveX * snapStrength, moveY * snapStrength)
+        end
     end
 end
 
--- Input Handling (Toggle Aimbot and Adjust Smoothness)
+-- Input handling for toggles
 UserInputService.InputBegan:Connect(function(input, isTyping)
     if isTyping then return end
 
     if input.KeyCode == aimKey then
         aimEnabled = not aimEnabled
         print("Aimbot: " .. (aimEnabled and "ON" or "OFF"))
-    elseif input.KeyCode == Enum.KeyCode.Equals then
-        aimSmoothness = math.min(1, aimSmoothness + 0.01) -- Max smoothness = 1
-        print("Smoothness Increased: " .. string.format("%.2f", aimSmoothness))
-    elseif input.KeyCode == Enum.KeyCode.Minus then
-        aimSmoothness = math.max(0.01, aimSmoothness - 0.01) -- Min smoothness = 0.01
-        print("Smoothness Decreased: " .. string.format("%.2f", aimSmoothness))
     end
 end)
 
--- Main Loop: Perform Aiming
+-- Main loop: Aimbot constantly aims at the target when enabled
 RunService.RenderStepped:Connect(function()
     if aimEnabled then
         local target = getClosestPlayerToMouse()
