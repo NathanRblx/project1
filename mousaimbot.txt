@@ -1,0 +1,73 @@
+-- Services
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+
+local camera = workspace.CurrentCamera
+local localPlayer = Players.LocalPlayer
+
+-- Variables
+local aimEnabled = false
+local aimSmoothness = 0.1 -- Default: 0.1 (Lower = stronger aim)
+local aimKey = Enum.KeyCode.Q
+
+-- Function: Find the closest player to the mouse
+local function getClosestPlayerToMouse()
+    local closestPlayer = nil
+    local shortestDistance = math.huge
+    local mousePosition = UserInputService:GetMouseLocation()
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player ~= localPlayer and player.Character and player.Character:FindFirstChild("Head") then
+            local headPosition, onScreen = camera:WorldToViewportPoint(player.Character.Head.Position)
+            if onScreen then
+                local distance = (Vector2.new(headPosition.X, headPosition.Y) - mousePosition).magnitude
+                if distance < shortestDistance then
+                    closestPlayer = player
+                    shortestDistance = distance
+                end
+            end
+        end
+    end
+
+    return closestPlayer
+end
+
+-- Function: Aim at the target smoothly (mouse-based)
+local function aimAt(target)
+    if target and target.Character and target.Character:FindFirstChild("Head") then
+        local headPosition = camera:WorldToViewportPoint(target.Character.Head.Position)
+        local mousePosition = UserInputService:GetMouseLocation()
+
+        local deltaX = (headPosition.X - mousePosition.X) * aimSmoothness
+        local deltaY = (headPosition.Y - mousePosition.Y) * aimSmoothness
+
+        mousemoverel(deltaX, deltaY)
+    end
+end
+
+-- Input Handling (Toggle Aimbot and Adjust Smoothness)
+UserInputService.InputBegan:Connect(function(input, isTyping)
+    if isTyping then return end
+
+    if input.KeyCode == aimKey then
+        aimEnabled = not aimEnabled
+        print("Aimbot: " .. (aimEnabled and "ON" or "OFF"))
+    elseif input.KeyCode == Enum.KeyCode.Equals then
+        aimSmoothness = math.min(1, aimSmoothness + 0.01) -- Max smoothness = 1
+        print("Smoothness Increased: " .. string.format("%.2f", aimSmoothness))
+    elseif input.KeyCode == Enum.KeyCode.Minus then
+        aimSmoothness = math.max(0.01, aimSmoothness - 0.01) -- Min smoothness = 0.01
+        print("Smoothness Decreased: " .. string.format("%.2f", aimSmoothness))
+    end
+end)
+
+-- Main Loop: Perform Aiming
+RunService.RenderStepped:Connect(function()
+    if aimEnabled then
+        local target = getClosestPlayerToMouse()
+        if target then
+            aimAt(target)
+        end
+    end
+end)
