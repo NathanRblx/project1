@@ -44,6 +44,16 @@ local Button = MainTab:CreateButton({
    end,
 })
 
+
+-- Second Button
+MainTab:CreateButton({
+   Name = "MouseAimbot",
+   Callback = function()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/NathanRblx/project1/refs/heads/main/mousaimbot.txt", true))()
+   end
+})
+
+
 Rayfield:Notify({
    Title = "Loaded",
    Content = "Fully Loaded",
@@ -83,7 +93,7 @@ end,
 local MainTab = Window:CreateTab("misc", 4483362458) -- Title, Image
 
 local Button = MainTab:CreateButton({
-   Name = "turn on fly",
+   Name = "turn on fly Keybind F",
    Callback = function()
       loadstring(game:HttpGet("https://raw.githubusercontent.com/NathanRblx/project1/refs/heads/main/fly.txt", true))()
    end,
