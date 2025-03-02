@@ -1,3 +1,7 @@
+-- Config (Easily change keybind and smoothness here)
+local aimKey = Enum.KeyCode.z -- Change this to your desired keybind
+local smoothness = 5 -- 1 = strongest, higher values = weaker
+
 -- Services
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
@@ -8,9 +12,7 @@ local localPlayer = Players.LocalPlayer
 
 -- Variables
 local aimEnabled = false
-local aimKey = Enum.KeyCode.Q
 local maxMoveSpeed = 50  -- Very high max move speed to track fast movements
-local snapStrength = 0.5 -- Increased snap strength for quicker snapping
 
 -- Find the closest player to the mouse
 local function getClosestPlayerToMouse()
@@ -34,39 +36,39 @@ local function getClosestPlayerToMouse()
     return closestPlayer
 end
 
--- Aim directly at the middle of the target's head with stronger snap and tracking
+-- Aim directly at the middle of the target's head
 local function aimAt(target)
     if target and target.Character and target.Character:FindFirstChild("Head") then
-        -- Get the size of the player's head
         local headSize = target.Character.Head.Size
-        -- Calculate the middle of the head
         local headMiddle = target.Character.Head.Position + Vector3.new(0, headSize.Y / 2, 0)
-        -- Convert the head middle position to viewport space
         local headPosition, onScreen = camera:WorldToViewportPoint(headMiddle)
         local mousePosition = UserInputService:GetMouseLocation()
 
         if onScreen then
-            -- Calculate the difference between the mouse and target position
             local deltaX = headPosition.X - mousePosition.X
             local deltaY = headPosition.Y - mousePosition.Y
 
-            -- Apply a high-speed snap that adjusts rapidly but with controlled movement
             local moveX = math.clamp(deltaX, -maxMoveSpeed, maxMoveSpeed)
             local moveY = math.clamp(deltaY, -maxMoveSpeed, maxMoveSpeed)
 
-            -- Apply stronger snap strength for quicker aiming
-            mousemoverel(moveX * snapStrength, moveY * snapStrength)
+            -- Smoothness control (higher smoothness = slower aiming)
+            mousemoverel(moveX / smoothness, moveY / smoothness)
         end
     end
 end
 
--- Input handling for toggles
+-- Input handling for holding the aim key
 UserInputService.InputBegan:Connect(function(input, isTyping)
     if isTyping then return end
 
     if input.KeyCode == aimKey then
-        aimEnabled = not aimEnabled
-        print("Aimbot: " .. (aimEnabled and "ON" or "OFF"))
+        aimEnabled = true
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.KeyCode == aimKey then
+        aimEnabled = false
     end
 end)
 
