@@ -1,5 +1,5 @@
 -- Config (Easily change keybind and smoothness here)
-local aimKey = Enum.KeyCode.z -- Change this to your desired keybind
+local aimKey = Enum.KeyCode.Z -- Change this to your desired keybind
 local smoothness = 4 -- 1 = strongest, higher values = weaker
 
 -- Services
