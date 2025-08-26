@@ -30,7 +30,7 @@ CircleDrawing.Color = Color3.fromRGB(255, 255, 255)
 local WorldToViewportPoint = Camera.WorldToViewportPoint
 local GetMouseLocation = UserInputService.GetMouseLocation
 local IsKeyDown = UserInputService.IsKeyDown
-local KeyCodeQ = Enum.KeyCode.Q
+local KeyCodeMb2 = Enum.KeyCode.Mb2
 
 -- Visibility Check Function
 local function IsVisible(position, ignoreList)
@@ -85,7 +85,7 @@ end
 
 -- Main loop
 RunService.Heartbeat:Connect(function()
-    -- Update Q key state
+    -- Update Mb2 key state
     AimbotSettings.Enabled = IsKeyDown(UserInputService, KeyCodeQ)
     
     if AimbotSettings.Enabled then
@@ -116,6 +116,7 @@ end)
 -- Initial notification
 game:GetService("StarterGui"):SetCore("SendNotification", {
     Title = "Aimbot Active",
-    Text = "Hold Q to aim\nP - Toggle Team Check",
+    Text = "Hold Mb2 to aim\nP - Toggle Team Check",
     Duration = 5
 })
+
